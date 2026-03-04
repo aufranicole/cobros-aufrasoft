@@ -637,6 +637,7 @@ body::before {
   background:var(--card); border:1px solid var(--border2);
   border-radius:12px; padding:14px 16px; cursor:pointer;
   transition:all 0.2s; text-decoration:none; color:var(--text);
+  width:100%; text-align:left; font-family:'Instrument Sans',sans-serif;
 }
 .wa-opt:hover { border-color:var(--wa); background:rgba(37,211,102,0.05); transform:translateX(3px); }
 .wa-opt-ic { font-size:22px; flex-shrink:0; }
@@ -771,7 +772,17 @@ body::before {
       Enviar por WhatsApp
     </div>
     <div class="wa-modal-desc">El mensaje está listo. Elige cómo quieres enviarlo:</div>
-    <div class="wa-opts" id="waOpts"></div>
+    <div class="wa-opts">
+      <button class="wa-opt" onclick="openWaWeb()">
+        <div class="wa-opt-ic">💻</div><div><div class="wa-opt-t">WhatsApp Web</div><div class="wa-opt-d">Abre en el navegador — elige el contacto allí.</div></div>
+      </button>
+      <button class="wa-opt" onclick="openWaApp()">
+        <div class="wa-opt-ic">📱</div><div><div class="wa-opt-t">App de WhatsApp</div><div class="wa-opt-d">Abre la app instalada en tu dispositivo.</div></div>
+      </button>
+      <button class="wa-opt" onclick="copyWaAndClose()">
+        <div class="wa-opt-ic">📋</div><div><div class="wa-opt-t">Copiar mensaje</div><div class="wa-opt-d">Copia al portapapeles para pegarlo manualmente.</div></div>
+      </button>
+    </div>
     <button class="wa-cancel" onclick="document.getElementById('waModal').style.display='none'">Cancelar</button>
   </div>
 </div>
@@ -1110,20 +1121,16 @@ function saveNotes(name){ const el=document.querySelector('.notes-ta'); if(el) n
 
 // ─── WHATSAPP MODAL ────────────────────────────────────────
 function openWa(msg){
-  pendingWaMsg=msg;
-  const enc=encodeURIComponent(msg);
-  document.getElementById('waOpts').innerHTML=`
-    <a class="wa-opt" href="https://web.whatsapp.com/send?text=${enc}" target="_blank">
-      <div class="wa-opt-ic">💻</div><div><div class="wa-opt-t">WhatsApp Web</div><div class="wa-opt-d">Abre en el navegador — elige el contacto allí.</div></div>
-    </a>
-    <a class="wa-opt" href="https://api.whatsapp.com/send?text=${enc}" target="_blank">
-      <div class="wa-opt-ic">📱</div><div><div class="wa-opt-t">App de WhatsApp</div><div class="wa-opt-d">Abre la app instalada en tu dispositivo.</div></div>
-    </a>
-    <div class="wa-opt" onclick="copyWaAndClose()">
-      <div class="wa-opt-ic">📋</div><div><div class="wa-opt-t">Copiar mensaje</div><div class="wa-opt-d">Copia al portapapeles para pegar manualmente.</div></div>
-    </div>
-  `;
-  document.getElementById('waModal').style.display='flex';
+  pendingWaMsg = msg;
+  document.getElementById('waModal').style.display = 'flex';
+}
+function openWaWeb(){
+  window.open('https://web.whatsapp.com/send?text=' + encodeURIComponent(pendingWaMsg), '_blank');
+  document.getElementById('waModal').style.display = 'none';
+}
+function openWaApp(){
+  window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(pendingWaMsg), '_blank');
+  document.getElementById('waModal').style.display = 'none';
 }
 function maybeCloseWa(e){ if(e.target===document.getElementById('waModal')) document.getElementById('waModal').style.display='none'; }
 function copyWaAndClose(){ navigator.clipboard.writeText(pendingWaMsg).then(()=>{ document.getElementById('waModal').style.display='none'; showToast('✅ Mensaje copiado'); }); }
