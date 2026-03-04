@@ -217,7 +217,24 @@ body::before {
   transform: scale(1.01);
   box-shadow: 0 0 30px rgba(79,124,255,0.1);
 }
-.upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; z-index:2; }
+.upload-tap-btn {
+  display:none;
+  align-items:center; justify-content:center; gap:8px;
+  background:var(--accent); color:#fff;
+  border:none; border-radius:10px; padding:12px 24px;
+  font-family:'Syne',sans-serif; font-size:14px; font-weight:700;
+  cursor:pointer; margin-top:4px; width:100%;
+  box-shadow:0 4px 16px rgba(79,124,255,0.35);
+  position:relative; z-index:3;
+}
+@media (hover: none) and (pointer: coarse) {
+  .upload-tap-btn { display:flex; }
+  .upload-hint-z { display:none; }
+  .upload-title-z { font-size:15px; }
+  .upload-zone { padding:28px 16px; }
+  .upload-zone input[type=file] { display:none; }
+}
 
 .upload-icon-wrap {
   width: 64px; height: 64px;
@@ -651,8 +668,23 @@ body::before {
 }
 .wa-cancel:hover { border-color:var(--text); color:var(--text); }
 
-/* SCROLL */
-::-webkit-scrollbar { width:4px; }
+/* MOBILE */
+@media (max-width: 768px) {
+  .kpi-row { grid-template-columns: repeat(2,1fr); }
+  .app-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .sidebar { height: 220px; border-right:none; border-bottom:1px solid var(--border); }
+  .cl-list { display:flex; flex-direction:row; overflow-x:auto; overflow-y:hidden; }
+  .cc { min-width:200px; border-bottom:none; border-right:1px solid var(--border); flex-shrink:0; }
+  .aged-track { display:none; }
+  .debt-grid { grid-template-columns:repeat(3,1fr); }
+  .topbar-date { display:none; }
+  .upload-card { padding:24px 20px; }
+  .brand-name { font-size:40px; }
+  .det { padding:16px; }
+  .atabs { font-size:11px; }
+  .status-row { gap:5px; }
+  .sbtn { font-size:10px; padding:5px 10px; }
+}
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
 
@@ -702,6 +734,13 @@ body::before {
         <span class="file-chip chip-xlsx">Excel .xlsx</span>
         <span class="file-chip chip-pdf">PDF</span>
       </div>
+    </div>
+    <!-- Botón exclusivo para móvil -->
+    <div style="width:100%;position:relative;">
+      <button class="upload-tap-btn" onclick="document.getElementById('mobileInput').click()">
+        📁 &nbsp;Seleccionar archivo
+      </button>
+      <input type="file" id="mobileInput" accept=".xlsx,.xls,.pdf" onchange="handleFileSelect(event)" style="display:none;">
     </div>
 
     <div id="filePreview" style="display:none;width:100%;"></div>
