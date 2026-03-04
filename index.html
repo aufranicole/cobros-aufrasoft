@@ -671,19 +671,79 @@ body::before {
 /* MOBILE */
 @media (max-width: 768px) {
   .kpi-row { grid-template-columns: repeat(2,1fr); }
-  .app-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-  .sidebar { height: 220px; border-right:none; border-bottom:1px solid var(--border); }
-  .cl-list { display:flex; flex-direction:row; overflow-x:auto; overflow-y:hidden; }
-  .cc { min-width:200px; border-bottom:none; border-right:1px solid var(--border); flex-shrink:0; }
-  .aged-track { display:none; }
-  .debt-grid { grid-template-columns:repeat(3,1fr); }
+  .kpi { padding: 12px 14px; }
+  .kpi-val { font-size: 18px; }
+  .kpi-sub { font-size: 10px; }
   .topbar-date { display:none; }
-  .upload-card { padding:24px 20px; }
-  .brand-name { font-size:40px; }
-  .det { padding:16px; }
-  .atabs { font-size:11px; }
-  .status-row { gap:5px; }
-  .sbtn { font-size:10px; padding:5px 10px; }
+  .topbar-logo { font-size:16px; }
+  .topbar-sub { font-size:9px; }
+  .ghost-btn { padding:6px 10px; font-size:11px; }
+
+  /* App body: stack sidebar + panel, each takes full screen */
+  .app-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Sidebar: full screen by default on mobile */
+  .sidebar {
+    position: absolute; inset: 0;
+    z-index: 10;
+    height: 100%;
+    border-right: none;
+    transform: translateX(0);
+    transition: transform 0.3s cubic-bezier(0.2,0,0,1);
+  }
+  .sidebar.hidden-mobile {
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+
+  /* Panel: full screen, hidden behind sidebar by default */
+  .panel {
+    position: absolute; inset: 0;
+    z-index: 5;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.2,0,0,1);
+  }
+  .panel.visible-mobile {
+    transform: translateX(0);
+  }
+
+  /* Back button shown only on mobile */
+  .mobile-back-btn {
+    display: flex !important;
+    align-items: center; gap: 8px;
+    background: var(--card); border: none;
+    color: var(--accent); font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700;
+    padding: 12px 16px; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    width: 100%; text-align: left;
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Detail adjustments */
+  .det { padding: 12px 14px; max-width: 100%; }
+  .det-header { flex-direction: column; gap: 4px; }
+  .det-name { font-size: 16px; }
+  .det-total { font-size: 20px; }
+  .debt-grid { grid-template-columns: repeat(3,1fr); gap: 5px; }
+  .dcell { padding: 8px 9px; }
+  .dc-val { font-size: 11px; }
+  .dc-lbl { font-size: 8px; }
+  .atabs button { font-size: 11px; padding: 8px 4px; }
+  .status-row { gap: 5px; }
+  .sbtn { font-size: 10px; padding: 5px 10px; }
+  .msg-body { font-size: 12px; max-height: 180px; }
+  .sec-title { margin: 14px 0 8px; }
+
+  /* Client list on mobile: vertical scroll, full width */
+  .cl-list { overflow-y: auto; overflow-x: hidden; }
+  .cc { min-width: unset; border-right: none; border-bottom: 1px solid var(--border); }
 }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
@@ -794,6 +854,9 @@ body::before {
     </aside>
 
     <section class="panel" id="mainPanel">
+      <button class="mobile-back-btn" id="mobileBackBtn" style="display:none;" onclick="mobileBack()">
+        ← Volver a clientes
+      </button>
       <div class="empty-panel">
         <div class="empty-illus">📋</div>
         <div class="empty-title">Elige un cliente</div>
@@ -982,6 +1045,19 @@ function resetApp(){
   selectedFile=null;
 }
 
+// ─── MOBILE NAV ───────────────────────────────────────────
+function isMobile(){ return window.innerWidth <= 768; }
+function mobileShowDetail(){
+  if(!isMobile()) return;
+  document.querySelector('.sidebar').classList.add('hidden-mobile');
+  document.getElementById('mainPanel').classList.add('visible-mobile');
+  document.getElementById('mobileBackBtn').style.display = 'flex';
+}
+function mobileBack(){
+  document.querySelector('.sidebar').classList.remove('hidden-mobile');
+  document.getElementById('mainPanel').classList.remove('visible-mobile');
+}
+
 // ─── LIST ──────────────────────────────────────────────────
 function lvl(c){
   const aged=(c.d3||0)+(c.d4||0)+(c.ant||0), pct=c.total>0?aged/c.total:0;
@@ -1029,6 +1105,7 @@ function pick(c,i){
   document.querySelectorAll('.cc').forEach(e=>e.classList.remove('sel'));
   const el=document.getElementById(`cc${i}`); if(el) el.classList.add('sel');
   renderDetail(c);
+  mobileShowDetail();
 }
 
 // ─── MESSAGES ─────────────────────────────────────────────
