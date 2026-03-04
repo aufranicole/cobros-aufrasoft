@@ -574,19 +574,29 @@ const STORE_KEY='cobros_aufrasoft_v4';
 // ═══════════════════════════════════════════
 function saveState(){
   try{
-    localStorage.setItem(STORE_KEY,JSON.stringify({statusMap,notesMap,tabMap,carteraMap,carteras,facturasMap,retoData}));
+    localStorage.setItem(STORE_KEY,JSON.stringify({statusMap,notesMap,tabMap,carteraMap,carteras,facturasMap,retoData,clients}));
   }catch(e){}
 }
 function loadState(){
   try{
     const s=localStorage.getItem(STORE_KEY);
-    if(!s) return;
+    if(!s) return false;
     const d=JSON.parse(s);
     statusMap=d.statusMap||{}; notesMap=d.notesMap||{}; tabMap=d.tabMap||{};
     carteraMap=d.carteraMap||{}; carteras=d.carteras||[];
     facturasMap=d.facturasMap||{}; retoData=d.retoData||null;
-  }catch(e){}
+    if(d.clients&&d.clients.length>0){ clients=d.clients; return true; }
+    return false;
+  }catch(e){ return false; }
 }
+
+// Restore session on page load
+window.addEventListener('DOMContentLoaded',()=>{
+  const restored = loadState();
+  if(restored && clients.length>0){
+    launchApp();
+  }
+});
 
 // ═══════════════════════════════════════════
 // UPLOAD
@@ -680,6 +690,7 @@ function launchApp(){
   document.getElementById('uploadScreen').style.display='none';
   document.getElementById('appScreen').style.display='flex';
   document.getElementById('tDate').textContent='📅 '+new Date().toLocaleDateString('es-DO',{day:'2-digit',month:'short',year:'numeric'});
+  saveState(); // persist clients + all state
   updateKpis();
   doFilter();
   if(retoData) updateRetoProgress();
@@ -716,6 +727,7 @@ function updateKpis(){
 }
 function resetApp(){
   clients=[];
+  saveState();
   document.getElementById('appScreen').style.display='none';
   document.getElementById('uploadScreen').style.display='flex';
   document.getElementById('progressWrap').style.display='none';
@@ -809,8 +821,15 @@ function applyFilters(){
 function pick(c,i){
   document.querySelectorAll('.cc').forEach(e=>e.classList.remove('sel'));
   const el=document.getElementById(`cc${i}`);if(el)el.classList.add('sel');
+  // Hide other panels first
+  document.getElementById('retoPanel').style.display='none';
+  document.getElementById('carteraPanel').style.display='none';
+  document.getElementById('emptyPanel').style.display='none';
+  document.getElementById('btnReto').classList.remove('active-tab');
+  document.getElementById('btnCartera').classList.remove('active-tab');
+  // Render and show detail
   renderDetail(c);
-  showClientDetail();
+  document.getElementById('clientDetail').style.display='block';
   mobileShowDetail();
 }
 
